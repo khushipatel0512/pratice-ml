@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sales Predictor – Advertising Budget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --paper: #f3f6f4;
+            --panel: #ffffff;
+            --ink: #12263a;
+            --muted: #5b6b7a;
+            --line: #d5ded9;
+            --teal: #0f766e;
+            --teal-dark: #0b5953;
+            --gold: #f2a900;
+            --error: #b42318;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --paper: #0e1a24;
+                --panel: #152635;
+                --ink: #e8eef2;
+                --muted: #9fb0bd;
+                --line: #27404f;
+                --teal: #2cb5a8;
+                --teal-dark: #5fd3c7;
+                --gold: #f6b93b;
+                --error: #ff8a80;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+        }
+
+        body {
+            font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.55;
+            min-height: 100vh;
+            /* faint graph-paper grid, a nod to plotting data */
+            background-image:
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: -1px -1px;
+        }
+
+        .wrap {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: clamp(24px, 6vw, 72px) 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 5vw, 56px);
+            align-items: start;
+        }
+
+        h1 {
+            font-family: "Bricolage Grotesque", "Source Sans 3", sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin: 0 0 16px;
+        }
+
+        .lead {
+            color: var(--muted);
+            font-size: 1.1rem;
+            max-width: 46ch;
+            margin: 0 0 32px;
+        }
+
+        .form {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .field {
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--line);
+            border-radius: 10px;
+            padding: 0 14px;
+            background: var(--paper);
+            transition: border-color .15s;
+        }
+
+        .field:focus-within {
+            border-color: var(--teal);
+        }
+
+        .field span {
+            font-family: "Bricolage Grotesque", sans-serif;
+            font-size: 1.5rem;
+            color: var(--muted);
+        }
+
+        .field input {
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            font: 700 1.9rem "Bricolage Grotesque", sans-serif;
+            color: var(--ink);
+            padding: 12px 8px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            margin: 20px 0 4px;
+            accent-color: var(--teal);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        button {
+            margin-top: 22px;
+            width: 100%;
+            font: 600 1.05rem "Source Sans 3", sans-serif;
+            color: #fff;
+            background: var(--teal);
+            border: 0;
+            border-radius: 10px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: background .15s, transform .05s;
+        }
+
+        button:hover {
+            background: var(--teal-dark);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: wait;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--gold);
+            outline-offset: 2px;
+        }
+
+        .result {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-top: 6px solid var(--gold);
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .result h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin: 0 0 6px;
+        }
+
+        .big {
+            font-family: "Bricolage Grotesque", sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.4rem, 6vw, 3.6rem);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            min-height: 1.1em;
+        }
+
+        .hint {
+            color: var(--muted);
+            margin: 6px 0 20px;
+            min-height: 1.5em;
+        }
+
+        .hint.error {
+            color: var(--error);
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .axis {
+            stroke: var(--line);
+            stroke-width: 1;
+        }
+
+        .tick {
+            fill: var(--muted);
+            font: 11px "Source Sans 3", sans-serif;
+        }
+
+        .fit {
+            stroke: var(--teal);
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        .dot {
+            fill: var(--gold);
+            stroke: var(--ink);
+            stroke-width: 2;
+            transition: cx .35s ease, cy .35s ease;
+        }
+
+        .drop {
+            stroke: var(--gold);
+            stroke-dasharray: 4 4;
+            stroke-width: 1.5;
+            transition: all .35s ease;
+        }
+
+        footer {
+            grid-column: 1 / -1;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        @media (max-width: 800px) {
+            .wrap {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <section>
+            <h1>How much will your ad budget bring in?</h1>
+            <p class="lead">Enter an advertising budget and get the sales a linear regression model expects from it.</p>
+
+            <div class="form">
+                <label for="budget">Advertising budget</label>
+                <div class="field">
+                    <span>$</span>
+                    <input id="budget" type="number" inputmode="decimal" min="0" step="any" value="10000"
+                        aria-describedby="range-info">
+                </div>
+                <input id="slider" type="range" min="500" max="20000" step="100" value="10000"
+                    aria-label="Advertising budget slider">
+                <div class="range-labels" id="range-info"><span>$500</span><span>$20,000 (range the model was trained
+                        on)</span></div>
+                <button id="go" type="button">Predict sales</button>
+            </div>
+        </section>
+
+        <section class="result" aria-live="polite">
+            <h2>Predicted sales</h2>
+            <div class="big" id="out">–</div>
+            <p class="hint" id="hint">Press “Predict sales” to see the result.</p>
+
+            <svg id="chart" viewBox="0 0 440 260" role="img"
+                aria-label="Fitted regression line of sales against advertising budget">
+                <line class="axis" x1="40" y1="220" x2="420" y2="220" />
+                <line class="axis" x1="40" y1="20" x2="40" y2="220" />
+                <text class="tick" x="40" y="240">$0</text>
+                <text class="tick" x="420" y="240" text-anchor="end">$20k budget</text>
+                <text class="tick" x="34" y="224" text-anchor="end">0</text>
+                <text class="tick" id="ymax" x="34" y="28" text-anchor="end"></text>
+                <path id="fit" class="fit" d="" />
+                <line id="drop" class="drop" x1="0" y1="0" x2="0" y2="0" visibility="hidden" />
+                <circle id="dot" class="dot" r="7" cx="0" cy="0" visibility="hidden" />
+            </svg>
+        </section>
+
+        <footer>Built with FastAPI and scikit-learn. Predictions are estimates from a simple model, not guarantees.
+        </footer>
+    </main>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const budget = $("budget"), slider = $("slider"), go = $("go");
+        const out = $("out"), hint = $("hint");
+        const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // chart geometry
+        const X0 = 40, X1 = 420, Y0 = 220, Y1 = 20, XMAX = 20000;
+        let yMax = 1, lineReady = false;
+        const sx = (b) => X0 + (Math.min(b, XMAX) / XMAX) * (X1 - X0);
+        const sy = (s) => Y0 - (Math.max(s, 0) / yMax) * (Y0 - Y1);
+
+        async function predict(value) {
+            const res = await fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ AdvertisingBudget: value })
+            });
+            if (!res.ok) throw new Error("Server returned " + res.status);
+            const data = await res.json();
+            return data.predictsales;
+        }
+
+        // draw the fitted line once, using two predictions
+        async function drawLine() {
+            try {
+                const [a, b] = await Promise.all([predict(0), predict(XMAX)]);
+                yMax = Math.max(a, b, 1) * 1.05;
+                $("fit").setAttribute("d", `M${sx(0)} ${sy(a)} L${sx(XMAX)} ${sy(b)}`);
+                $("ymax").textContent = "$" + Math.round(yMax / 1000) + "k";
+                lineReady = true;
+            } catch (e) { /* the line is a bonus; the prediction still works */ }
+        }
+
+        function placeDot(b, s) {
+            if (!lineReady) return;
+            const x = sx(b), y = sy(s);
+            const dot = $("dot"), drop = $("drop");
+            dot.setAttribute("cx", x); dot.setAttribute("cy", y); dot.setAttribute("visibility", "visible");
+            drop.setAttribute("x1", x); drop.setAttribute("x2", x);
+            drop.setAttribute("y1", y); drop.setAttribute("y2", Y0);
+            drop.setAttribute("visibility", "visible");
+        }
+
+        async function run() {
+            const value = parseFloat(budget.value);
+            hint.classList.remove("error");
+            if (!Number.isFinite(value) || value < 0) {
+                hint.textContent = "Enter a budget of 0 or more.";
+                hint.classList.add("error");
+                return;
+            }
+            go.disabled = true; go.textContent = "Predicting…";
+            try {
+                const sales = await predict(value);
+                out.textContent = money(sales);
+                const outside = value < 500 || value > 20000;
+                hint.textContent = outside
+                    ? "This budget is outside the range the model learned from, so treat it as a rough guess."
+                    : "Expected sales for a budget of " + money(value) + ".";
+                placeDot(value, sales);
+            } catch (e) {
+                out.textContent = "–";
+                hint.textContent = "Could not reach the prediction service. Try again in a moment.";
+                hint.classList.add("error");
+            } finally {
+                go.disabled = false; go.textContent = "Predict sales";
+            }
+        }
+
+        slider.addEventListener("input", () => { budget.value = slider.value; });
+        budget.addEventListener("input", () => { slider.value = budget.value; });
+        budget.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+        slider.addEventListener("change", run);
+        go.addEventListener("click", run);
+
+        drawLine().then(run);
+    </script>
+</body>
+
+</html>
