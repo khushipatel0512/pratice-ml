@@ -52,7 +52,6 @@
             color: var(--ink);
             line-height: 1.55;
             min-height: 100vh;
-            /* faint graph-paper grid, a nod to plotting data */
             background-image:
                 linear-gradient(var(--line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--line) 1px, transparent 1px);
@@ -274,13 +273,13 @@
             <div class="form">
                 <label for="budget">Advertising budget</label>
                 <div class="field">
-                    <span>$</span>
+                    <span>₹</span>
                     <input id="budget" type="number" inputmode="decimal" min="0" step="any" value="10000"
                         aria-describedby="range-info">
                 </div>
                 <input id="slider" type="range" min="500" max="20000" step="100" value="10000"
                     aria-label="Advertising budget slider">
-                <div class="range-labels" id="range-info"><span>$500</span><span>$20,000 (range the model was trained
+                <div class="range-labels" id="range-info"><span>₹500</span><span>₹20,000 (range the model was trained
                         on)</span></div>
                 <button id="go" type="button">Predict sales</button>
             </div>
@@ -295,8 +294,8 @@
                 aria-label="Fitted regression line of sales against advertising budget">
                 <line class="axis" x1="40" y1="220" x2="420" y2="220" />
                 <line class="axis" x1="40" y1="20" x2="40" y2="220" />
-                <text class="tick" x="40" y="240">$0</text>
-                <text class="tick" x="420" y="240" text-anchor="end">$20k budget</text>
+                <text class="tick" x="40" y="240">₹0</text>
+                <text class="tick" x="420" y="240" text-anchor="end">₹20k budget</text>
                 <text class="tick" x="34" y="224" text-anchor="end">0</text>
                 <text class="tick" id="ymax" x="34" y="28" text-anchor="end"></text>
                 <path id="fit" class="fit" d="" />
@@ -313,7 +312,7 @@
         const $ = (id) => document.getElementById(id);
         const budget = $("budget"), slider = $("slider"), go = $("go");
         const out = $("out"), hint = $("hint");
-        const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const money = (n) => "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         // chart geometry
         const X0 = 40, X1 = 420, Y0 = 220, Y1 = 20, XMAX = 20000;
@@ -338,7 +337,7 @@
                 const [a, b] = await Promise.all([predict(0), predict(XMAX)]);
                 yMax = Math.max(a, b, 1) * 1.05;
                 $("fit").setAttribute("d", `M${sx(0)} ${sy(a)} L${sx(XMAX)} ${sy(b)}`);
-                $("ymax").textContent = "$" + Math.round(yMax / 1000) + "k";
+                $("ymax").textContent = "₹" + Math.round(yMax / 1000) + "k";
                 lineReady = true;
             } catch (e) { /* the line is a bonus; the prediction still works */ }
         }
